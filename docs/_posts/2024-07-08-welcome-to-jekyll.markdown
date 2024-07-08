@@ -1,8 +1,7 @@
 ---
 layout: post
 title: "发刊词"
-date: 2024-07-08 22:35:00 +/-TTTT
-categories: [category1, category2]
+date: 2024-07-08 22:35:00 +0800
 ---
 发刊词
 ===
