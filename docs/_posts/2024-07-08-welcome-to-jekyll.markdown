@@ -1,3 +1,9 @@
+---
+layout: post
+title: "发刊词"
+date: 2024-07-08 22:35:00 +/-TTTT
+categories: [category1, category2]
+---
 发刊词
 ===
 
