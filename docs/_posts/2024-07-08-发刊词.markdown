@@ -1,7 +1,9 @@
 ---
 layout: post
 title: "发刊词"
+author: jane
 date: 2024-07-08 22:35:00 +0800
+image: assets/images/1.jpg
 ---
 
 发刊词
