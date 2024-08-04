@@ -1,6 +1,7 @@
 ---
 layout: post
 title: "青年与电子游戏世界：记忆，身体与意识"
+author: bone
 date: 2024-07-08 22:35:00 +0800
 ---
 
