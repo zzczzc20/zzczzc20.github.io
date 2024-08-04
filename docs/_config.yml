@@ -42,11 +42,11 @@ plugins:
   - jekyll-remote-theme
   
 authors:
-    sal:
-      name:           Sal
+    Bone:
+      name:           Bone
       site:           https://www.wowthemes.net
       avatar:         /docs/assets/images/avatar1.jpg
-      bio:            "Hi, I am Sal, the author of Mundana, the theme you're currently previewing. I hope you like it!"
+      bio:            "Hi, I am Bone, the author of Mundana, the theme you're currently previewing. I hope you like it!"
       email:          wowthemesnet@gmail.com
       twitter:        https://twitter.com/wowthemesnet
 
@@ -66,7 +66,7 @@ defaults:
       path: "_posts"
     values:
       layout: post
-      author: sal
+      author: Bone
       avatar: /docs/assets/images/avatar1.jpg
       
   # all pages
