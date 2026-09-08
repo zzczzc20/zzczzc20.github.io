@@ -1,0 +1,1180 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Zhongchun Zhou - Ph.D. candidate at HKUST working on computer architecture, GPGPU memory hierarchies and AI infrastructure.">
+<meta name="color-scheme" content="dark">
+<title>Zhongchun Zhou</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+
+<style>
+/* ==========================================================================
+   Die-floorplan identity. Committed single (dark) visual world.
+   Ground: silicon substrate blue-black.  Accent: copper interconnect.
+   ========================================================================== */
+:root{
+  --bg:#06080e; --bg-deep:#04060b; --panel:#0b0f17; --panel-2:#101623; --panel-3:#141b29;
+  --rule:rgba(124,150,196,.13); --rule-2:rgba(124,150,196,.26); --rule-3:rgba(124,150,196,.42);
+
+  --cu:#ff8f45; --cu-lo:#c9541a; --cu-hi:#ffc79a; --cu-tint:rgba(255,143,69,.10);
+  --via:#7c96ff;
+
+  --ink:#e6ebf5; --ink-2:#a3afc7; --ink-3:#6d7b96; --ink-4:#4a566d;
+
+  --sans:"IBM Plex Sans",ui-sans-serif,system-ui,"Helvetica Neue",Arial,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --disp:"Archivo","Archivo Expanded",var(--sans);
+
+  --gut:clamp(20px,4.5vw,64px);
+  --rail:216px;
+  --max:1140px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);
+  font-size:16px;line-height:1.62;-webkit-font-smoothing:antialiased;overflow-x:hidden;
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+  #pulse,#pulseGlow{display:none}
+}
+a{color:var(--via);text-decoration:none}
+a:hover{color:var(--cu)}
+a:focus-visible,button:focus-visible{outline:2px solid var(--cu);outline-offset:3px;border-radius:2px}
+img{max-width:100%;display:block}
+::selection{background:rgba(255,143,69,.28);color:#fff}
+
+/* film grain — kills the flat-CSS look */
+.grain{
+  position:fixed;inset:0;z-index:900;pointer-events:none;opacity:.035;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+/* scroll progress hairline */
+.prog{position:fixed;top:0;left:0;height:2px;width:0;z-index:950;background:linear-gradient(90deg,var(--cu-lo),var(--cu));box-shadow:0 0 12px rgba(255,143,69,.6)}
+
+.mono{font-family:var(--mono);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase}
+.num{font-variant-numeric:tabular-nums}
+
+/* ==========================================================================
+   LEFT RAIL — the pin/label column of a die photo
+   ========================================================================== */
+.rail{
+  position:fixed;inset:0 auto 0 0;width:var(--rail);z-index:40;
+  display:flex;flex-direction:column;justify-content:space-between;
+  padding:32px 0 28px 28px;border-right:1px solid var(--rule);
+  background:linear-gradient(180deg,var(--bg-deep),#070a11);
+}
+.rail-mark{display:flex;align-items:center;gap:9px}
+.rail-mark .sq{width:19px;height:19px;flex:none;position:relative;border:1.5px solid var(--cu);background:var(--cu-tint)}
+.rail-mark .sq::after{content:"";position:absolute;inset:4px;border:1px solid rgba(255,143,69,.5)}
+.rail-mark b{font-family:var(--mono);font-size:12px;letter-spacing:.16em;color:var(--ink);font-weight:600}
+.rail-nav{display:flex;flex-direction:column;gap:1px;margin:0;padding:0;list-style:none}
+.rail-nav a{
+  display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:11.5px;
+  letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3);padding:7px 0;transition:color .18s;
+}
+.rail-nav a::before{content:"";width:14px;height:1px;background:var(--rule-2);flex:none;transition:width .22s,background .22s}
+.rail-nav a:hover{color:var(--ink-2)}
+.rail-nav a.on{color:var(--cu)}
+.rail-nav a.on::before{width:26px;background:var(--cu)}
+.rail-foot{font-family:var(--mono);font-size:10.5px;line-height:1.9;color:var(--ink-3);letter-spacing:.06em}
+.rail-foot a{color:var(--ink-3)}
+.rail-foot a:hover{color:var(--cu)}
+.page{margin-left:var(--rail)}
+@media (max-width:1080px){.rail{display:none}.page{margin-left:0}}
+
+/* ==========================================================================
+   HERO
+   ========================================================================== */
+.hero{position:relative;padding:clamp(56px,8vw,100px) var(--gut) clamp(40px,5vw,64px);overflow:hidden}
+#trace{
+  position:absolute;inset:0;width:100%;height:100%;z-index:0;opacity:.9;
+  -webkit-mask-image:radial-gradient(74% 86% at 82% 24%,#000 3%,transparent 72%);
+          mask-image:radial-gradient(74% 86% at 82% 24%,#000 3%,transparent 72%);
+}
+.hero::after{content:"";position:absolute;left:0;right:0;bottom:0;height:200px;z-index:1;
+  background:linear-gradient(to top,var(--bg),transparent);pointer-events:none}
+.hero-in{position:relative;z-index:2;max-width:var(--max);margin:0 auto;display:grid;
+  grid-template-columns:minmax(0,1fr) 268px;gap:clamp(28px,4vw,60px);align-items:end}
+@media (max-width:880px){.hero-in{grid-template-columns:minmax(0,1fr);align-items:start}}
+
+.eyebrow{display:flex;align-items:center;gap:12px;color:var(--ink-3);margin-bottom:22px}
+.eyebrow .tick{width:26px;height:1px;background:var(--cu);flex:none}
+.name{
+  font-family:var(--disp);font-variation-settings:"wdth" 124;font-weight:800;
+  font-size:clamp(46px,8.8vw,108px);line-height:.92;letter-spacing:-.032em;margin:0;color:var(--ink);
+}
+.name .cu{color:var(--cu);text-shadow:0 0 44px rgba(255,143,69,.32)}
+.role{margin:22px 0 0;font-family:var(--mono);font-size:clamp(11.5px,1.35vw,13.5px);
+  letter-spacing:.15em;text-transform:uppercase;color:var(--ink-2)}
+.role span{color:var(--ink-4)}
+.hook{margin:26px 0 0;font-family:var(--disp);font-variation-settings:"wdth" 106;font-weight:600;
+  font-size:clamp(19px,2.4vw,29px);line-height:1.2;letter-spacing:-.02em;color:var(--ink);max-width:22ch;text-wrap:balance}
+.hook em{font-style:normal;color:var(--cu)}
+.pitch{margin:18px 0 0;max-width:58ch;font-size:clamp(15px,1.35vw,16.5px);line-height:1.68;color:var(--ink-2)}
+.pitch b{color:var(--ink);font-weight:600}
+.pitch .hl{color:var(--cu-hi);font-weight:500}
+.avail{display:inline-flex;align-items:center;gap:10px;margin-top:30px;padding:8px 15px 8px 12px;
+  border:1px solid rgba(255,143,69,.34);background:linear-gradient(90deg,rgba(255,143,69,.12),rgba(255,143,69,.02));
+  font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:#ffb27c}
+.avail .dot{width:7px;height:7px;border-radius:50%;background:var(--cu);animation:pulse 2.6s ease-out infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,143,69,.5)}70%{box-shadow:0 0 0 9px rgba(255,143,69,0)}100%{box-shadow:0 0 0 0 rgba(255,143,69,0)}}
+
+/* portrait — a framed die-photo plate; aspect-ratio is locked so it can never distort */
+.portrait{position:relative;justify-self:end;width:100%;max-width:268px}
+@media (max-width:880px){.portrait{max-width:196px;justify-self:start;order:-1;margin-bottom:10px}}
+.plate{position:relative;aspect-ratio:4/5;overflow:hidden;border:1px solid var(--rule-2);
+  background:radial-gradient(88% 70% at 50% 22%,#16202f,#0a0e16 72%)}
+.plate::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(200deg,rgba(255,143,69,.16),transparent 42%),linear-gradient(0deg,rgba(6,8,14,.72),transparent 46%)}
+.plate img{width:100%;height:100%;object-fit:cover;object-position:50% 8%;
+  filter:grayscale(.34) contrast(1.08) brightness(1.02)}
+.portrait .c{position:absolute;width:13px;height:13px;z-index:3}
+.portrait .c.tl{top:-1px;left:-1px;border-top:2px solid var(--cu);border-left:2px solid var(--cu)}
+.portrait .c.br{bottom:-1px;right:-1px;border-bottom:2px solid var(--cu);border-right:2px solid var(--cu)}
+.plate-cap{display:flex;justify-content:space-between;gap:10px;margin-top:9px;
+  font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-4)}
+.plate-cap b{color:var(--cu);font-weight:500}
+
+/* ---- spec strip: a datasheet row ---- */
+.specs-wrap{position:relative;z-index:2;padding:clamp(44px,6vw,72px) var(--gut) 0}
+.specs{max-width:var(--max);margin:0 auto;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+  border-top:1px solid var(--rule-2);border-bottom:1px solid var(--rule)}
+@media (max-width:760px){.specs{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.spec{padding:20px 22px;border-left:1px solid var(--rule)}
+.spec:first-child{border-left:0;padding-left:0}
+@media (max-width:760px){
+  .spec:nth-child(3){border-left:0;padding-left:0}
+  .spec:nth-child(n+3){border-top:1px solid var(--rule)}
+}
+.spec .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
+.spec .v{font-family:var(--disp);font-variation-settings:"wdth" 108;font-weight:700;
+  font-size:clamp(26px,3.2vw,37px);line-height:1.14;margin:8px 0 4px;color:var(--ink);font-variant-numeric:tabular-nums}
+.spec .v em{font-style:normal;color:var(--cu)}
+.spec .n{font-size:13px;color:var(--ink-3);line-height:1.5}
+a.spec{text-decoration:none;transition:background .2s}
+a.spec:hover{background:rgba(255,143,69,.055)}
+a.spec:hover .v{color:var(--cu-hi)}
+a.spec .k{display:flex;align-items:center;gap:7px}
+a.spec .k::after{content:"↗";color:var(--cu);opacity:.45;transition:opacity .2s;letter-spacing:0}
+a.spec:hover .k::after{opacity:1}
+
+/* ==========================================================================
+   VISION BAND — the three-second version
+   ========================================================================== */
+.manifesto{position:relative;margin-top:clamp(52px,7vw,88px);overflow:hidden;
+  border-top:1px solid var(--rule-2);border-bottom:1px solid var(--rule-2);
+  background:linear-gradient(180deg,rgba(255,143,69,.05),transparent 58%),var(--bg-deep)}
+.manifesto .ghost{position:absolute;top:50%;right:0;transform:translateY(-50%);width:min(560px,50%);height:auto;
+  opacity:.65;pointer-events:none;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 58%);mask-image:linear-gradient(90deg,transparent,#000 58%)}
+@media (max-width:900px){.manifesto .ghost{display:none}}
+.manifesto-in{position:relative;z-index:1;max-width:var(--max);margin:0 auto;padding:clamp(44px,6vw,80px) var(--gut)}
+.creed{font-family:var(--disp);font-variation-settings:"wdth" 112;font-weight:800;
+  font-size:clamp(27px,4.6vw,58px);line-height:1.06;letter-spacing:-.03em;margin:0;color:var(--ink);
+  max-width:19ch;text-wrap:balance}
+.creed em{font-style:normal;color:var(--cu);text-shadow:0 0 46px rgba(255,143,69,.3)}
+.creed .dim{color:var(--ink-4)}
+.creed-foot{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(20px,3vw,48px);
+  margin-top:clamp(28px,3.6vw,44px);padding-top:22px;border-top:1px solid var(--rule)}
+@media (max-width:760px){.creed-foot{grid-template-columns:1fr;gap:22px}}
+.creed-foot .one{font-size:17px;line-height:1.6;color:var(--ink-2);margin:0;max-width:44ch}
+.creed-foot .one b{color:var(--cu-hi);font-weight:600}
+.creed-foot .goal{margin:0}
+.creed-foot .goal dt{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-4)}
+.creed-foot .goal dd{margin:8px 0 0;font-family:var(--mono);font-size:12.5px;line-height:1.85;color:var(--ink-2);letter-spacing:.01em}
+.creed-foot .goal dd span{color:var(--cu);margin-right:8px}
+
+/* ==========================================================================
+   SECTIONS
+   ========================================================================== */
+section{padding:clamp(64px,7.5vw,112px) var(--gut) 0}
+.wrap{max-width:var(--max);margin:0 auto}
+.sec-head{display:flex;align-items:baseline;gap:16px;margin-bottom:clamp(24px,3.2vw,38px)}
+.sec-head .lbl{font-family:var(--mono);font-size:11.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--cu);white-space:nowrap}
+.sec-head .line{flex:1;height:1px;background:var(--rule-2)}
+.sec-head .cnt{font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;color:var(--ink-3);white-space:nowrap}
+h2.title{font-family:var(--disp);font-variation-settings:"wdth" 108;font-weight:700;
+  font-size:clamp(28px,3.7vw,42px);line-height:1.1;letter-spacing:-.022em;margin:0 0 14px;color:var(--ink);text-wrap:balance}
+h2.title .cu{color:var(--cu)}
+.lede{max-width:68ch;color:var(--ink-2);font-size:16.5px;margin:0 0 clamp(28px,3.5vw,44px)}
+.lede b{color:var(--ink);font-weight:600}
+
+/* ---- figure shell: wide diagrams scroll inside their own container ---- */
+.fig{position:relative;border:1px solid var(--rule);background:
+  radial-gradient(120% 100% at 15% 0%,rgba(124,150,196,.05),transparent 60%),
+  linear-gradient(180deg,#080c13,#0b1017);overflow-x:auto;overflow-y:hidden}
+.fig::-webkit-scrollbar{height:6px}
+.fig::-webkit-scrollbar-thumb{background:var(--rule-2)}
+.fig svg{display:block}
+.fig-cap{display:flex;flex-wrap:wrap;gap:6px 18px;justify-content:space-between;margin-top:10px;
+  font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-4)}
+.fig-cap b{color:var(--ink-3);font-weight:500}
+.svg-lbl{font-family:"IBM Plex Mono",monospace;letter-spacing:.1em;text-transform:uppercase}
+.svg-t{font-family:"IBM Plex Sans",sans-serif}
+
+/* ---- 4 stage cards under the loop ---- */
+.stages{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--rule);
+  border:1px solid var(--rule);margin-top:clamp(22px,3vw,34px)}
+@media (max-width:1000px){.stages{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:620px){.stages{grid-template-columns:1fr}}
+.stage{background:var(--panel);padding:22px 20px 24px;display:flex;flex-direction:column;gap:11px;
+  transition:background .22s;border-top:2px solid transparent}
+.stage:hover{background:var(--panel-2);border-top-color:var(--cu)}
+.stage .no{font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;color:var(--cu)}
+.stage h3{font-family:var(--disp);font-variation-settings:"wdth" 104;font-weight:600;font-size:18px;
+  line-height:1.24;margin:0;color:var(--ink)}
+.stage .sub{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-4);margin:-6px 0 0}
+.stage p{margin:0;font-size:14.4px;line-height:1.62;color:var(--ink-2)}
+.stage dl{margin:2px 0 0;display:grid;grid-template-columns:auto 1fr;gap:4px 10px;font-size:12.8px}
+.stage dt{font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--ink-4);padding-top:3px}
+.stage dd{margin:0;color:var(--ink-2);line-height:1.5}
+.stage dd b{color:var(--cu-hi);font-weight:600;font-variant-numeric:tabular-nums}
+
+/* ---- architecture: policy trio ---- */
+.policies{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule)}
+@media (max-width:880px){.policies{grid-template-columns:1fr}}
+.policy{background:var(--panel);padding:20px 20px 22px;display:flex;flex-direction:column;gap:10px}
+.policy svg{width:100%;height:auto;display:block}
+.policy h4{font-size:15.5px;font-weight:600;margin:0;color:var(--ink)}
+.policy .no{font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;color:var(--cu)}
+.policy p{margin:0;font-size:13.6px;line-height:1.6;color:var(--ink-2)}
+
+/* ---- result strip inside architecture ---- */
+.results{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--rule);
+  border:1px solid var(--rule);margin-top:1px}
+@media (max-width:760px){.results{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.result{background:var(--panel-2);padding:18px 20px}
+.result .v{font-family:var(--disp);font-variation-settings:"wdth" 106;font-weight:700;font-size:26px;
+  color:var(--cu);line-height:1.1;font-variant-numeric:tabular-nums}
+.result .k{font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3);margin-top:6px}
+
+/* ---- publications ---- */
+.pubs{border-top:1px solid var(--rule-2)}
+.pub{display:grid;grid-template-columns:136px minmax(0,1fr);border-bottom:1px solid var(--rule);
+  padding:24px 0;transition:background .2s}
+.pub:hover{background:rgba(124,150,196,.03)}
+@media (max-width:760px){.pub{grid-template-columns:1fr;gap:12px}}
+.pub .venue{display:flex;flex-direction:column;gap:8px;align-items:flex-start;padding-right:20px}
+@media (max-width:760px){.pub .venue{flex-direction:row;align-items:center;gap:12px}}
+.badge{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;
+  padding:4px 9px;border:1px solid var(--rule-2);color:var(--ink-2);white-space:nowrap}
+.badge.hot{border-color:rgba(255,143,69,.45);background:var(--cu-tint);color:#ffb27c}
+.pub .yr{font-family:var(--mono);font-size:11.5px;color:var(--ink-3);letter-spacing:.08em}
+.pub h3{font-family:var(--disp);font-variation-settings:"wdth" 104;font-weight:600;
+  font-size:clamp(18px,2.05vw,21.5px);line-height:1.3;margin:0 0 8px;color:var(--ink);text-wrap:balance}
+.pub h3 .short{color:var(--cu)}
+.authors{font-size:13.6px;color:var(--ink-3);margin:0 0 10px;line-height:1.55}
+.authors b{color:var(--ink-2);font-weight:600}
+.authors .me{color:var(--cu);font-weight:600}
+.pub p.what{margin:0 0 12px;font-size:14.8px;color:var(--ink-2);max-width:72ch;line-height:1.62}
+.chips{display:flex;flex-wrap:wrap;gap:7px;align-items:center}
+.chip{font-family:var(--mono);font-size:11px;letter-spacing:.05em;color:var(--ink-2);
+  border:1px solid var(--rule);background:var(--panel);padding:4px 9px;font-variant-numeric:tabular-nums}
+.chip b{color:var(--cu);font-weight:600}
+a.chip.link{color:var(--via);border-color:rgba(124,150,255,.32)}
+a.chip.link:hover{color:var(--cu);border-color:rgba(255,143,69,.45);background:var(--cu-tint)}
+a.chip.acm{color:var(--cu-hi);border-color:rgba(255,143,69,.4);background:var(--cu-tint)}
+a.chip.acm:hover{border-color:var(--cu);background:rgba(255,143,69,.18)}
+
+/* ---- timeline ---- */
+.tl{position:relative;padding-left:26px}
+.tl::before{content:"";position:absolute;left:4px;top:8px;bottom:14px;width:1px;
+  background:linear-gradient(180deg,var(--cu-lo),var(--rule) 22%,var(--rule))}
+.tl-item{position:relative;padding:0 0 30px}
+.tl-item::before{content:"";position:absolute;left:-26px;top:7px;width:9px;height:9px;
+  background:var(--bg);border:1.5px solid var(--rule-2);border-radius:50%}
+.tl-item.now::before{border-color:var(--cu);background:var(--cu);box-shadow:0 0 10px rgba(255,143,69,.6)}
+.tl-when{font-family:var(--mono);font-size:11px;letter-spacing:.11em;text-transform:uppercase;color:var(--cu);font-variant-numeric:tabular-nums}
+.tl-item h3{font-family:var(--sans);font-size:17px;font-weight:600;margin:5px 0 2px;color:var(--ink)}
+.tl-where{font-size:13.6px;color:var(--ink-3);margin:0 0 8px}
+.tl-where em{font-style:normal;color:var(--ink-2)}
+.tl-item ul{margin:0;padding-left:17px;color:var(--ink-2);font-size:14.6px;line-height:1.62}
+.tl-item li{margin:0 0 4px}
+.tl-item li::marker{color:var(--cu-lo)}
+
+/* ---- toolchain + education ---- */
+.split{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:clamp(28px,4vw,56px)}
+@media (max-width:880px){.split{grid-template-columns:1fr}}
+.kit{display:flex;flex-direction:column;gap:18px}
+.kit-row{display:grid;grid-template-columns:122px minmax(0,1fr);gap:14px;align-items:start;
+  padding-bottom:16px;border-bottom:1px solid var(--rule)}
+@media (max-width:520px){.kit-row{grid-template-columns:1fr;gap:8px}}
+.kit-row .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3);padding-top:4px}
+.kit-row .v{display:flex;flex-wrap:wrap;gap:6px}
+.kit-row .v span{font-size:13.4px;color:var(--ink-2);border:1px solid var(--rule);padding:4px 9px;background:var(--panel)}
+.kit-row .v span.key{border-color:rgba(255,143,69,.35);color:#ffb27c;background:var(--cu-tint)}
+.edu{border:1px solid var(--rule);background:var(--panel);padding:24px}
+.edu-item{padding-bottom:18px;margin-bottom:18px;border-bottom:1px solid var(--rule)}
+.edu-item:last-of-type{border-bottom:0}
+.edu-item h3{font-size:16.5px;font-weight:600;margin:0 0 2px;color:var(--ink)}
+.edu-item .deg{font-size:14px;color:var(--ink-2);margin:0 0 6px}
+.edu-item .meta{font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.edu-item .meta b{color:var(--cu);font-weight:600}
+.edu-item .course{font-family:var(--mono);font-size:10.5px;color:var(--ink-4);line-height:1.75;margin-top:6px;letter-spacing:.02em}
+.honors{margin:20px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:9px}
+.honors li{display:flex;gap:10px;font-size:14px;color:var(--ink-2);line-height:1.5}
+.honors li::before{content:"◆";color:var(--cu-lo);font-size:9px;line-height:1.9;flex:none}
+.honors .yr{font-family:var(--mono);font-size:11px;color:var(--ink-3);margin-left:auto;padding-left:10px;flex:none}
+
+/* ---- contact ---- */
+.contact{margin-top:clamp(70px,9vw,120px);border-top:1px solid var(--rule-2);
+  background:linear-gradient(180deg,rgba(255,143,69,.05),transparent 60%)}
+.contact-in{max-width:var(--max);margin:0 auto;padding:clamp(48px,6vw,78px) var(--gut) 30px}
+.contact h2{font-family:var(--disp);font-variation-settings:"wdth" 116;font-weight:800;
+  font-size:clamp(30px,5vw,58px);line-height:1.02;letter-spacing:-.028em;margin:0 0 16px;color:var(--ink)}
+.contact h2 .cu{color:var(--cu)}
+.contact p{max-width:58ch;color:var(--ink-2);margin:0 0 30px;font-size:16.5px}
+.links{display:flex;flex-wrap:wrap;gap:10px}
+.links a{display:inline-flex;align-items:center;gap:9px;padding:12px 17px;border:1px solid var(--rule-2);
+  color:var(--ink);font-family:var(--mono);font-size:12.5px;letter-spacing:.05em;background:var(--panel);
+  transition:border-color .2s,background .2s,transform .2s}
+.links a:hover{border-color:var(--cu);background:var(--cu-tint);color:#ffb27c;transform:translateY(-1px)}
+.links a .ic{color:var(--cu);font-size:11px;letter-spacing:.14em}
+.links a.primary{border-color:rgba(255,143,69,.5);background:rgba(255,143,69,.1);color:#ffb27c}
+footer{max-width:var(--max);margin:0 auto;padding:26px var(--gut) 40px;display:flex;flex-wrap:wrap;
+  gap:12px 24px;justify-content:space-between;font-family:var(--mono);font-size:10.5px;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--ink-4);border-top:1px solid var(--rule)}
+
+/* ---- hero entrance: settles to a fully visible page ---- */
+@media (prefers-reduced-motion:no-preference){
+  .rise{animation:rise .62s cubic-bezier(.2,.7,.3,1) both}
+  .rise-1{animation-delay:.04s}.rise-2{animation-delay:.11s}.rise-3{animation-delay:.18s}
+  .rise-4{animation-delay:.25s}.rise-5{animation-delay:.32s}
+  @keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+}
+</style>
+
+</head>
+<body>
+<div class="grain"></div>
+<div class="prog" id="prog"></div>
+
+<aside class="rail">
+  <div class="rail-mark"><span class="sq"></span><b>ZZ</b></div>
+  <nav>
+    <ul class="rail-nav">
+      <li><a href="#vision">Vision</a></li>
+      <li><a href="#system">Research System</a></li>
+      <li><a href="#arch">Architecture</a></li>
+      <li><a href="#pubs">Publications</a></li>
+      <li><a href="#track">Track Record</a></li>
+      <li><a href="#kit">Toolchain</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+  </nav>
+  <div class="rail-foot">
+    Hong Kong SAR<br>
+    <a href="https://scholar.google.com/citations?user=WuX9ZJkAAAAJ" target="_blank" rel="noopener">Scholar ↗</a> ·
+    <a href="https://orcid.org/0009-0000-7037-7418" target="_blank" rel="noopener">ORCID ↗</a><br>
+    <span style="color:var(--cu)">● </span>Open to 2026 roles
+  </div>
+</aside>
+
+<div class="page">
+
+  <!-- ============================ HERO ============================ -->
+  <header class="hero">
+    <canvas id="trace" aria-hidden="true"></canvas>
+    <div class="hero-in">
+      <div>
+        <div class="eyebrow mono rise rise-1"><span class="tick"></span>HKUST · Electronic &amp; Computer Engineering</div>
+        <h1 class="name rise rise-1">Zhongchun<br><span class="cu">Zhou</span></h1>
+        <p class="role rise rise-2">Ph.D. Candidate <span>—</span> Computer Architecture <span>·</span> GPGPU <span>·</span> AI Infrastructure</p>
+        <p class="hook rise rise-3">Tensor cores kept getting faster.<br>The path that feeds them <em>didn't</em>.</p>
+        <p class="pitch rise rise-4">
+          I measure that gap, then close it in hardware — <b>Chisel RTL at 15 nm on one end,
+          Triton kernels on the other.</b>
+        </p>
+        <div class="avail rise rise-5"><span class="dot"></span>Open to 2026 full-time roles · architecture, AI infra, performance</div>
+      </div>
+      <div class="portrait rise rise-2">
+        <span class="c tl"></span>
+        <div class="plate"><img src="assets/portrait.png" alt="Portrait of Zhongchun Zhou" width="576" height="720"></div>
+        <span class="c br"></span>
+        <div class="plate-cap"><span>Zhongchun Zhou</span><span><b>HKUST</b> · ECE</span></div>
+      </div>
+    </div>
+  </header>
+
+  <div class="specs-wrap"><div class="specs rise rise-5">
+    <a class="spec" href="https://scholar.google.com/citations?user=WuX9ZJkAAAAJ" target="_blank" rel="noopener">
+      <div class="k">Citations · Scholar</div><div class="v num">110<em>+</em></div>
+      <div class="n">across 7 papers — AACL · ICS · ICPP · ASP-DAC · IEEE TC</div>
+    </a>
+    <div class="spec"><div class="k">LLC speedup — DCO</div><div class="v num">1.90<em>×</em></div><div class="n">over an LRU-managed last-level cache</div></div>
+    <div class="spec"><div class="k">Simulator error — Sim-FA</div><div class="v num">5.7<em>%</em></div><div class="n">MAPE against real NVIDIA H800 silicon</div></div>
+    <div class="spec"><div class="k">Tensor Management Unit</div><div class="v num">0.064<em> mm²</em></div><div class="n">15 nm standard cell, 2 GHz, Chisel HDL</div></div>
+  </div></div>
+
+  <!-- ============================ VISION ============================ -->
+  <div class="manifesto" id="vision">
+    <svg class="ghost" viewBox="0 0 700 300" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+      <path d="M150,110 H550 C640,110 640,205 550,205 H150 C60,205 60,110 150,110"
+            fill="none" stroke="rgba(255,143,69,.20)" stroke-width="1.1" stroke-dasharray="5 8"/>
+      <g fill="rgba(255,143,69,.30)">
+        <circle cx="150" cy="110" r="5.5"/><circle cx="283" cy="110" r="5.5"/>
+        <circle cx="416" cy="110" r="5.5"/><circle cx="550" cy="110" r="5.5"/>
+      </g>
+      <path d="M150,110 H550" stroke="rgba(255,143,69,.16)" stroke-width="1.1" fill="none"/>
+    </svg>
+    <div class="manifesto-in">
+      <div class="sec-head"><span class="lbl">Vision</span><span class="line"></span><span class="cnt">The three-second version</span></div>
+      <p class="creed">Benchmark it. Trace it. Simulate it. <em>Then build the silicon that fixes it.</em></p>
+      <div class="creed-foot">
+        <p class="one">
+          One closed loop, four shipped artefacts. The point is to make an AI accelerator's memory system
+          <b>as predictable as its math</b> — so a performance claim survives contact with real hardware.
+        </p>
+        <dl class="goal">
+          <dt>What that buys</dt>
+          <dd>
+            <span>▸</span>compiler teams learn which tile DSL to bet on<br>
+            <span>▸</span>architects get a what-if answer before any RTL exists<br>
+            <span>▸</span>the same cache does up to 1.9× more work
+          </dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================ RESEARCH SYSTEM ============================ -->
+  <section id="system"><div class="wrap">
+    <div class="sec-head"><span class="lbl">Research System</span><span class="line"></span><span class="cnt">Closed loop</span></div>
+    <h2 class="title">Most people pick one layer. I built the <span class="cu">loop</span>.</h2>
+    <p class="lede">
+      A benchmark tells you <b>where</b> the gap is. A trace tells you <b>what the kernel actually did</b>.
+      A cycle-accurate simulator tells you <b>why</b> the cycles went missing. Only then can an architecture
+      close the gap — and the same benchmark proves it did. Each stage below is a shipped artefact, and each
+      one feeds the next.
+    </p>
+
+    <div class="fig">
+      <svg viewBox="-46 0 1212 212" style="min-width:920px;width:100%;height:auto" role="img" aria-label="Closed research loop: benchmark, trace, simulate, architect, feeding back to benchmark">
+        <defs>
+          <marker id="ah" viewBox="0 0 10 8" refX="9" refY="4" markerWidth="9" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,4 L0,8 z" fill="#7c96ff"/>
+          </marker>
+          <marker id="ahc" viewBox="0 0 10 8" refX="9" refY="4" markerWidth="9" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,4 L0,8 z" fill="#c9541a"/>
+          </marker>
+          <radialGradient id="nodeG"><stop offset="0" stop-color="#1b2536"/><stop offset="1" stop-color="#0a0e16"/></radialGradient>
+        </defs>
+
+        <!-- feedback racetrack (dashed) -->
+        <path id="loopPath" d="M80,54 H1040 C1122,54 1122,158 1040,158 H80 C-2,158 -2,54 80,54"
+              fill="none" stroke="rgba(124,150,196,.22)" stroke-width="1.2" stroke-dasharray="5 7"/>
+        <!-- forward track (solid) -->
+        <path d="M80,54 H1040" fill="none" stroke="rgba(124,150,196,.40)" stroke-width="1.4"/>
+        <!-- return arrow into node 01 -->
+        <path d="M150,158 H84" fill="none" stroke="#c9541a" stroke-width="1.4" marker-end="url(#ahc)"/>
+
+        <!-- forward arrowheads -->
+        <path d="M232,54 H248" stroke="#7c96ff" stroke-width="1.4" marker-end="url(#ah)" fill="none"/>
+        <path d="M552,54 H568" stroke="#7c96ff" stroke-width="1.4" marker-end="url(#ah)" fill="none"/>
+        <path d="M872,54 H888" stroke="#7c96ff" stroke-width="1.4" marker-end="url(#ah)" fill="none"/>
+
+        <!-- handoff labels -->
+        <text class="svg-lbl" x="240" y="34" text-anchor="middle" font-size="10" fill="#6d7b96">kernels + shapes</text>
+        <text class="svg-lbl" x="560" y="34" text-anchor="middle" font-size="10" fill="#6d7b96">unified per-SM trace</text>
+        <text class="svg-lbl" x="880" y="34" text-anchor="middle" font-size="10" fill="#6d7b96">traffic · bubbles · L2 pressure</text>
+
+        <!-- nodes -->
+        <g>
+          <circle cx="80"   cy="54" r="15" fill="url(#nodeG)" stroke="#ff8f45" stroke-width="1.5"/><circle cx="80"   cy="54" r="4.5" fill="#ff8f45"/>
+          <circle cx="400"  cy="54" r="15" fill="url(#nodeG)" stroke="#ff8f45" stroke-width="1.5"/><circle cx="400"  cy="54" r="4.5" fill="#ff8f45"/>
+          <circle cx="720"  cy="54" r="15" fill="url(#nodeG)" stroke="#ff8f45" stroke-width="1.5"/><circle cx="720"  cy="54" r="4.5" fill="#ff8f45"/>
+          <circle cx="1040" cy="54" r="15" fill="url(#nodeG)" stroke="#ff8f45" stroke-width="1.5"/><circle cx="1040" cy="54" r="4.5" fill="#ff8f45"/>
+        </g>
+
+        <!-- node captions -->
+        <g text-anchor="middle">
+          <text class="svg-lbl" x="80"   y="92"  font-size="10.5" fill="#ff8f45">01 · Benchmark</text>
+          <text class="svg-t"   x="80"   y="112" font-size="14" font-weight="600" fill="#e6ebf5">TileBench</text>
+          <text class="svg-lbl" x="400"  y="92"  font-size="10.5" fill="#ff8f45">02 · Trace</text>
+          <text class="svg-t"   x="400"  y="112" font-size="14" font-weight="600" fill="#e6ebf5">FA3 + TTGIR frontends</text>
+          <text class="svg-lbl" x="720"  y="92"  font-size="10.5" fill="#ff8f45">03 · Simulate</text>
+          <text class="svg-t"   x="720"  y="112" font-size="14" font-weight="600" fill="#e6ebf5">Sim-FA</text>
+          <text class="svg-lbl" x="1040" y="92"  font-size="10.5" fill="#ff8f45">04 · Architect</text>
+          <text class="svg-t"   x="1040" y="112" font-size="14" font-weight="600" fill="#e6ebf5">TMU + managed LLC</text>
+        </g>
+
+        <!-- feedback label -->
+        <text class="svg-lbl" x="560" y="182" text-anchor="middle" font-size="10" fill="#c9541a">
+          closed loop — new policies re-enter the benchmark and are measured again
+        </text>
+
+        <!-- the pulse travelling the whole loop -->
+        <circle id="pulseGlow" r="9" fill="rgba(255,143,69,.22)">
+          <animateMotion dur="12s" repeatCount="indefinite" rotate="auto"><mpath href="#loopPath"/></animateMotion>
+        </circle>
+        <circle id="pulse" r="3.6" fill="#ffc79a">
+          <animateMotion dur="12s" repeatCount="indefinite" rotate="auto"><mpath href="#loopPath"/></animateMotion>
+        </circle>
+      </svg>
+    </div>
+    <div class="fig-cap"><span><b>Fig. 1</b> — the research system, one full turn</span><span>Programming model → measured silicon → hardware policy → back</span></div>
+
+    <div class="stages">
+      <article class="stage">
+        <div class="no">01 · Benchmark</div>
+        <h3>TileBench</h3>
+        <p class="sub">Diagnose the programming model</p>
+        <p>Fix operator semantics, dtypes and shapes so Triton and cuTile are measured on identical work — then
+           diagnose every gap with Nsight Compute and PTX/SASS instead of guessing at it.</p>
+        <dl>
+          <dt>Scale</dt><dd><b>45</b> operators, 5 categories, NVIDIA <b>B200</b></dd>
+          <dt>Finding</dt><dd>cuTile wins on TMA/Tensor-Core-friendly tiles; Triton is more robust on irregular and bandwidth-bound work</dd>
+          <dt>Headroom</dt><dd>after autotuning, only <b>8/45</b> kernels reach 80% of roofline</dd>
+        </dl>
+      </article>
+
+      <article class="stage">
+        <div class="no">02 · Trace</div>
+        <h3>Two trace frontends</h3>
+        <p class="sub">Capture what the kernel really did</p>
+        <p>An FA3-specialised path records producer/consumer event buffers per CTA; an operator-agnostic
+           TTGIR/Proton path covers everything else. Both normalise into one per-SM trace.</p>
+        <dl>
+          <dt>Recovery</dt><dd>cache-line address sets rebuilt from TensorMap descriptors and real GEMM tile access</dd>
+          <dt>Output</dt><dd>a single unified trace format the simulator consumes directly</dd>
+        </dl>
+      </article>
+
+      <article class="stage">
+        <div class="no">03 · Simulate</div>
+        <h3>Sim-FA</h3>
+        <p class="sub">Explain where the cycles went</p>
+        <p>Cycle-level models of Hopper's asynchronous pipeline — TMA hierarchy, WGMMA issue, warp specialisation,
+           coalescer, sliced LLC with MSHRs and an XOR slice hash — across 132 SMs.</p>
+        <dl>
+          <dt>Accuracy</dt><dd><b>5.7%</b> MAPE vs. real H800 (<b>12.7%</b> worst case)</dd>
+          <dt>Insight</dt><dd>corrected wave-based DRAM traffic model; prior roofline models under-count badly</dd>
+          <dt>Enables</dt><dd>architecture what-if studies before any RTL exists</dd>
+        </dl>
+      </article>
+
+      <article class="stage">
+        <div class="no">04 · Architect</div>
+        <h3>TMU + managed shared cache</h3>
+        <p class="sub">Close the gap in hardware</p>
+        <p>A lightweight unit that carries tensor- and tile-level metadata into the cache, so replacement,
+           dead-block retirement and bypassing act on dataflow the compiler already knew.</p>
+        <dl>
+          <dt>Gain</dt><dd>up to <b>1.90×</b> over LRU; matches or beats an SPM without SPM compile times</dd>
+          <dt>Cost</dt><dd><b>0.064 mm²</b> at 2 GHz, 15 nm (full design 0.218 mm² at 1 GHz)</dd>
+          <dt>Next</dt><dd>larger-scale DSE with Sim-FA · broader DSL support · silicon prototyping of the TMU</dd>
+        </dl>
+      </article>
+    </div>
+  </div></section>
+
+  <!-- ============================ ARCHITECTURE ============================ -->
+  <section id="arch"><div class="wrap">
+    <div class="sec-head"><span class="lbl">Architecture</span><span class="line"></span><span class="cnt">DCO · LCM · LLAMCAT</span></div>
+    <h2 class="title">A shared cache that knows what a <span class="cu">tensor</span> is.</h2>
+    <p class="lede">
+      AI accelerators lean on software-managed scratchpads: fast, but they need explicit data movement, they
+      fragment, and they take <b>hours to compile for an LLM</b>. Worse, they handle mixed-precision quantisation
+      and quadratic KV growth badly. My bet is the other way — a managed shared cache, plus a small hardware
+      unit that tells it what the compiler already knew.
+    </p>
+
+    <div class="fig">
+      <svg viewBox="0 0 1120 452" style="min-width:800px;width:100%;height:auto" role="img" aria-label="SoC diagram: CPU and accelerator cores over a managed shared last-level cache with a Tensor Management Unit">
+        <defs>
+          <pattern id="hatch" width="7" height="7" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+            <line x1="0" y1="0" x2="0" y2="7" stroke="rgba(124,150,196,.10)" stroke-width="1.6"/>
+          </pattern>
+          <marker id="d" viewBox="0 0 8 8" refX="4" refY="4" markerWidth="5" markerHeight="5">
+            <circle cx="4" cy="4" r="2.6" fill="rgba(124,150,196,.5)"/>
+          </marker>
+          <marker id="cuA" viewBox="0 0 10 8" refX="9" refY="4" markerWidth="8" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L10,4 L0,8 z" fill="#ff8f45"/>
+          </marker>
+        </defs>
+
+        <!-- control bus -->
+        <text class="svg-lbl" x="120" y="24" font-size="9.5" fill="#4a566d">start / interrupt signals</text>
+        <path d="M120,40 H880" stroke="rgba(124,150,196,.3)" stroke-width="1"/>
+        <g stroke="rgba(124,150,196,.3)" stroke-width="1">
+          <path d="M190,40 V64"/><path d="M460,40 V64"/><path d="M640,40 V64"/><path d="M820,40 V64"/>
+        </g>
+
+        <!-- core row -->
+        <g>
+          <rect x="120" y="64" width="140" height="48" fill="#101623" stroke="rgba(124,150,196,.34)"/>
+          <text class="svg-t" x="190" y="93" text-anchor="middle" font-size="14" font-weight="600" fill="#a3afc7">CPU</text>
+
+          <rect x="400" y="64" width="120" height="48" fill="#101623" stroke="rgba(124,150,196,.34)"/>
+          <text class="svg-t" x="460" y="93" text-anchor="middle" font-size="14" font-weight="600" fill="#a3afc7">Acc_0</text>
+
+          <text class="svg-t" x="550" y="94" text-anchor="middle" font-size="15" fill="#4a566d">· · ·</text>
+
+          <rect x="580" y="64" width="120" height="48" fill="#101623" stroke="rgba(124,150,196,.34)"/>
+          <text class="svg-t" x="640" y="93" text-anchor="middle" font-size="14" font-weight="600" fill="#a3afc7">Acc_n</text>
+
+          <!-- TMU: the hero block -->
+          <rect x="760" y="64" width="120" height="48" fill="rgba(255,143,69,.13)" stroke="#ff8f45" stroke-width="1.6"/>
+          <rect x="765" y="69" width="110" height="38" fill="none" stroke="rgba(255,143,69,.32)"/>
+          <text class="svg-t" x="820" y="93" text-anchor="middle" font-size="15" font-weight="700" fill="#ffc79a">TMU</text>
+        </g>
+
+        <!-- L1 caches -->
+        <path d="M155,112 V150 M225,112 V150" stroke="rgba(124,150,196,.3)" stroke-width="1"/>
+        <rect x="120" y="150" width="64" height="40" fill="#0d121c" stroke="rgba(124,150,196,.26)"/>
+        <text class="svg-lbl" x="152" y="174" text-anchor="middle" font-size="10" fill="#6d7b96">$L1-I</text>
+        <rect x="196" y="150" width="64" height="40" fill="#0d121c" stroke="rgba(124,150,196,.26)"/>
+        <text class="svg-lbl" x="228" y="174" text-anchor="middle" font-size="10" fill="#6d7b96">$L1-D</text>
+
+        <!-- accelerator → LLC -->
+        <g stroke="rgba(124,150,196,.3)" stroke-width="1">
+          <path d="M460,112 V150"/><path d="M640,112 V150"/><path d="M550,190 V232"/>
+        </g>
+        <text class="svg-lbl" x="400" y="143" font-size="9" fill="#ff8f45">DFAC · ASP-DAC '27</text>
+        <rect x="400" y="150" width="300" height="40" fill="#0d121c" stroke="rgba(255,143,69,.38)"/>
+        <text class="svg-t" x="550" y="169" text-anchor="middle" font-size="12.5" font-weight="600" fill="#a3afc7">Intra-cluster coalescer</text>
+        <text class="svg-lbl" x="550" y="183" text-anchor="middle" font-size="8.5" fill="#6d7b96">compile-time reuse counts → hardware merge tables</text>
+        <!-- TMU ↔ LLC : the metadata channel -->
+        <path d="M820,112 V232" stroke="#ff8f45" stroke-width="1.6" stroke-dasharray="5 4"
+              marker-start="url(#cuA)" marker-end="url(#cuA)"/>
+        <text class="svg-lbl" x="832" y="178" font-size="9.5" fill="#ff8f45">tensor / tile metadata</text>
+
+        <!-- cache row -->
+        <path d="M190,190 V232" stroke="rgba(124,150,196,.3)" stroke-width="1"/>
+        <rect x="120" y="232" width="140" height="46" fill="#0d121c" stroke="rgba(124,150,196,.26)"/>
+        <text class="svg-lbl" x="190" y="260" text-anchor="middle" font-size="10.5" fill="#8b98b2">CPU $L2</text>
+
+        <rect x="400" y="232" width="480" height="46" fill="url(#hatch)" stroke="rgba(255,143,69,.42)"/>
+        <rect x="400" y="232" width="480" height="46" fill="rgba(255,143,69,.05)" stroke="none"/>
+        <text class="svg-t" x="640" y="255" text-anchor="middle" font-size="14" font-weight="600" fill="#ffc79a">Accelerator Shared Cache (LLC)</text>
+        <text class="svg-lbl" x="640" y="271" text-anchor="middle" font-size="9" fill="#8b98b2">dead-block retirement · anti-thrashing · dynamic bypass · MSHR arbitration</text>
+
+        <!-- main memory -->
+        <g stroke="rgba(124,150,196,.3)" stroke-width="1">
+          <path d="M190,278 V344"/><path d="M640,278 V344"/>
+        </g>
+        <rect x="120" y="344" width="760" height="48" fill="url(#hatch)" stroke="rgba(124,150,196,.3)"/>
+        <text class="svg-t" x="500" y="373" text-anchor="middle" font-size="14" font-weight="500" fill="#8b98b2">System Main Memory / HBM</text>
+
+        <!-- right-hand annotations -->
+        <g>
+          <path d="M880,88 H916" stroke="rgba(255,143,69,.5)" stroke-width="1"/>
+          <text class="svg-lbl" x="924" y="80"  font-size="9.5" fill="#ff8f45">Tensor Management Unit</text>
+          <text class="svg-lbl" x="924" y="95"  font-size="9" fill="#6d7b96">tensor meta · tile meta · dead FIFO</text>
+          <text class="svg-lbl" x="924" y="110" font-size="9" fill="#6d7b96">0.064 mm² · 2 GHz · 15 nm · Chisel</text>
+
+          <path d="M880,255 H916" stroke="rgba(124,150,196,.4)" stroke-width="1"/>
+          <text class="svg-lbl" x="924" y="250" font-size="9.5" fill="#a3afc7">Managed shared cache</text>
+          <text class="svg-lbl" x="924" y="265" font-size="9" fill="#6d7b96">replaces deep SPM hierarchy</text>
+          <text class="svg-lbl" x="924" y="280" font-size="9" fill="#6d7b96">no explicit data-movement code</text>
+        </g>
+
+        <!-- figure baseline note -->
+        <text class="svg-lbl" x="120" y="424" font-size="9" fill="#4a566d">
+          Key insight — expose tensor-level metadata (shape, expected accesses, tile size) to hardware, and the cache can predict instead of guess.
+        </text>
+      </svg>
+    </div>
+    <div class="fig-cap"><span><b>Fig. 2</b> — managed shared-cache SoC with the TMU</span><span>DCO (IEEE TC) · LCM (ICS '24)</span></div>
+
+    <div style="margin-top:clamp(28px,3.5vw,44px)">
+      <div class="sec-head"><span class="lbl">Predictive policies</span><span class="line"></span><span class="cnt">One priority score, three decisions</span></div>
+      <div class="policies">
+
+        <article class="policy">
+          <div class="no">Policy 01</div>
+          <svg viewBox="0 0 300 138" role="img" aria-label="Dead-block prediction: a tile whose access count reaches its expected count is retired immediately">
+            <defs><marker id="cuA1" viewBox="0 0 10 8" refX="9" refY="4" markerWidth="8" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,4 L0,8 z" fill="#ff8f45"/></marker></defs>
+            <text class="svg-lbl" x="6" y="14" font-size="9" fill="#4a566d">accCnt / nAcc</text>
+            <g>
+              <rect x="6"   y="26" width="42" height="30" fill="#131b29" stroke="rgba(124,150,196,.3)"/>
+              <text class="svg-lbl" x="27" y="45" text-anchor="middle" font-size="9.5" fill="#a3afc7">1/3</text>
+              <rect x="54"  y="26" width="42" height="30" fill="#131b29" stroke="rgba(124,150,196,.3)"/>
+              <text class="svg-lbl" x="75" y="45" text-anchor="middle" font-size="9.5" fill="#a3afc7">2/3</text>
+              <rect x="102" y="26" width="42" height="30" fill="rgba(255,143,69,.16)" stroke="#ff8f45" stroke-width="1.4"/>
+              <text class="svg-lbl" x="123" y="45" text-anchor="middle" font-size="9.5" fill="#ffc79a">3/3</text>
+              <rect x="150" y="26" width="42" height="30" fill="#131b29" stroke="rgba(124,150,196,.3)"/>
+              <text class="svg-lbl" x="171" y="45" text-anchor="middle" font-size="9.5" fill="#a3afc7">1/4</text>
+              <rect x="198" y="26" width="42" height="30" fill="#131b29" stroke="rgba(124,150,196,.3)"/>
+              <text class="svg-lbl" x="219" y="45" text-anchor="middle" font-size="9.5" fill="#a3afc7">0/2</text>
+            </g>
+            <path d="M123,58 V76 H196" stroke="#ff8f45" stroke-width="1.4" fill="none" marker-end="url(#cuA1)"/>
+            <rect x="200" y="64" width="94" height="26" fill="rgba(255,143,69,.10)" stroke="rgba(255,143,69,.45)"/>
+            <text class="svg-lbl" x="247" y="81" text-anchor="middle" font-size="9" fill="#ffc79a">dead FIFO</text>
+            <path d="M247,90 V108" stroke="rgba(255,143,69,.5)" stroke-width="1.2" stroke-dasharray="3 3" fill="none" marker-end="url(#cuA1)"/>
+            <text class="svg-lbl" x="247" y="126" text-anchor="middle" font-size="9" fill="#6d7b96">evicted first</text>
+          </svg>
+          <h4>Dead-block prediction</h4>
+          <p>The dataflow says a tile will be read exactly <em>n</em> times. On access <em>n</em> it is finished —
+             retire it now, rather than waiting for LRU to notice it went cold.</p>
+        </article>
+
+        <article class="policy">
+          <div class="no">Policy 02</div>
+          <svg viewBox="0 0 300 138" role="img" aria-label="Self-adaptive anti-thrashing: priority tiers derived from tag bits, lowest tier evicted first">
+            <defs><marker id="cuA2" viewBox="0 0 10 8" refX="9" refY="4" markerWidth="8" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,4 L0,8 z" fill="#ff8f45"/></marker></defs>
+            <text class="svg-lbl" x="6" y="14" font-size="9" fill="#4a566d">priority tier — tag[B_BITS-1:0]</text>
+            <g>
+              <rect x="12"  y="70" width="46" height="34" fill="rgba(255,143,69,.16)" stroke="#ff8f45" stroke-width="1.4"/>
+              <rect x="72"  y="54" width="46" height="50" fill="#131b29" stroke="rgba(124,150,196,.3)"/>
+              <rect x="132" y="42" width="46" height="62" fill="#131b29" stroke="rgba(124,150,196,.3)"/>
+              <rect x="192" y="28" width="46" height="76" fill="#131b29" stroke="rgba(124,150,196,.3)"/>
+            </g>
+            <path d="M12,110 H262" stroke="rgba(124,150,196,.25)" stroke-width="1"/>
+            <text class="svg-lbl" x="35"  y="124" text-anchor="middle" font-size="9" fill="#ffc79a">T0</text>
+            <text class="svg-lbl" x="95"  y="124" text-anchor="middle" font-size="9" fill="#6d7b96">T1</text>
+            <text class="svg-lbl" x="155" y="124" text-anchor="middle" font-size="9" fill="#6d7b96">T2</text>
+            <text class="svg-lbl" x="215" y="124" text-anchor="middle" font-size="9" fill="#6d7b96">T3</text>
+            <path d="M35,62 V86" stroke="#ff8f45" stroke-width="1.5" fill="none" marker-end="url(#cuA2)"/>
+            <text class="svg-lbl" x="42" y="34" font-size="9" fill="#ff8f45">evict lowest tier</text>
+            <text class="svg-lbl" x="42" y="47" font-size="8.5" fill="#6d7b96">tie-break with LRU</text>
+          </svg>
+          <h4>Self-adaptive anti-thrashing</h4>
+          <p>Low tag bits become a uniform priority score. The lowest tier is sacrificed so a hot subset survives —
+             and the number of tiers shrinks automatically as the cache does.</p>
+        </article>
+
+        <article class="policy">
+          <div class="no">Policy 03</div>
+          <svg viewBox="0 0 300 138" role="img" aria-label="Coordinated dynamic bypassing: low-reuse traffic is steered past the cache straight to DRAM">
+            <defs>
+              <marker id="cuA3" viewBox="0 0 10 8" refX="9" refY="4" markerWidth="8" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,4 L0,8 z" fill="#ff8f45"/></marker>
+              <pattern id="hatch3" width="7" height="7" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+                <line x1="0" y1="0" x2="0" y2="7" stroke="rgba(124,150,196,.12)" stroke-width="1.6"/>
+              </pattern>
+            </defs>
+            <text class="svg-lbl" x="6" y="14" font-size="9" fill="#4a566d">request stream</text>
+            <path d="M6,52 H62" stroke="rgba(124,150,196,.45)" stroke-width="1.4" fill="none"/>
+            <circle cx="70" cy="52" r="7" fill="#0a0e16" stroke="#ff8f45" stroke-width="1.4"/>
+            <text class="svg-lbl" x="70" y="55.5" text-anchor="middle" font-size="8" fill="#ffc79a">?</text>
+
+            <path d="M78,48 C104,36 108,32 132,32" stroke="rgba(124,150,196,.5)" stroke-width="1.4" fill="none" marker-end="url(#cuA3)"/>
+            <rect x="140" y="16" width="80" height="32" fill="#131b29" stroke="rgba(124,150,196,.35)"/>
+            <text class="svg-lbl" x="180" y="36" text-anchor="middle" font-size="9.5" fill="#a3afc7">LLC</text>
+            <text class="svg-lbl" x="86" y="26" font-size="8.5" fill="#6d7b96">reusable</text>
+
+            <path d="M78,58 C104,74 108,86 132,86" stroke="#ff8f45" stroke-width="1.5" stroke-dasharray="5 4" fill="none" marker-end="url(#cuA3)"/>
+            <text class="svg-lbl" x="84" y="102" font-size="8.5" fill="#ff8f45">low reuse — bypass</text>
+
+            <rect x="140" y="60" width="80" height="52" fill="url(#hatch3)" stroke="rgba(124,150,196,.3)"/>
+            <text class="svg-lbl" x="180" y="90" text-anchor="middle" font-size="9.5" fill="#8b98b2">DRAM</text>
+            <path d="M220,32 C246,32 246,74 226,84" stroke="rgba(124,150,196,.3)" stroke-width="1.2" fill="none"/>
+            <text class="svg-lbl" x="238" y="126" text-anchor="end" font-size="8.5" fill="#4a566d">shared priority score</text>
+          </svg>
+          <h4>Coordinated dynamic bypassing</h4>
+          <p>Bypass reads the <em>same</em> priority score as replacement, so the two never fight. Low-value traffic
+             goes straight to DRAM and leaves the reusable working set intact.</p>
+        </article>
+      </div>
+
+      <div class="results">
+        <div class="result"><div class="v num">1.90×</div><div class="k">DCO vs. LRU-managed LLC</div></div>
+        <div class="result"><div class="v num">2.57×</div><div class="k">LCM vs. a plain LRU cache</div></div>
+        <div class="result"><div class="v num">+50.5%</div><div class="k">vs. an SPM under mixed-precision</div></div>
+        <div class="result"><div class="v num">2.08×</div><div class="k">DFAC coalescer on FlashAttention</div></div>
+      </div>
+    </div>
+  </div></section>
+
+  <!-- ============================ PUBLICATIONS ============================ -->
+  <section id="pubs"><div class="wrap">
+    <div class="sec-head"><span class="lbl">Publications</span><span class="line"></span><span class="cnt">7 papers · 5 first or co-first · 110+ citations</span></div>
+    <h2 class="title">Selected work.</h2>
+    <p class="lede" style="margin-bottom:clamp(20px,2.4vw,30px)">
+      Full record on <a href="https://scholar.google.com/citations?user=WuX9ZJkAAAAJ" target="_blank" rel="noopener">Google Scholar ↗</a>
+      and <a href="https://orcid.org/0009-0000-7037-7418" target="_blank" rel="noopener">ORCID ↗</a>.
+    </p>
+
+    <div class="pubs">
+
+      <article class="pub">
+        <div class="venue"><span class="badge hot">AACL '26</span><span class="yr">Accepted</span></div>
+        <div>
+          <h3><span class="short">TileBench</span> — A Controlled Benchmark for Performance Evaluation and Bottleneck Diagnosis of Tile-Based Programming Models</h3>
+          <p class="authors">B. Cui*, <span class="me">Z. Zhou</span>*, et al. &nbsp;·&nbsp; <b>*equal contribution</b><br>
+            5th Asia-Pacific Chapter of the ACL &amp; 15th Int'l Joint Conference on Natural Language Processing</p>
+          <p class="what">
+            Triton and NVIDIA's cuTile both promise high performance from tile-level code, but no one had compared
+            them on matched work. TileBench pins down operator semantics, dtypes and shapes across 45 operators so
+            the measured difference is the compiler's — then diagnoses each gap with Nsight Compute and PTX/SASS.
+          </p>
+          <div class="chips">
+            <span class="chip"><b>45</b> operators · 5 categories</span>
+            <span class="chip">NVIDIA <b>B200</b></span>
+            <span class="chip">Triton <b>2.7×</b> vs. PyTorch (geomean)</span>
+            <span class="chip">cuTile <b>2.2×</b></span>
+            <span class="chip">only <b>8/45</b> reach 80% roofline</span>
+            <span class="chip">LLM kernel generation: Triton is token-cheaper</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="pub">
+        <div class="venue"><span class="badge hot">IEEE TC</span><span class="yr">2026 · Accepted</span></div>
+        <div>
+          <h3><span class="short">DCO</span> — Dynamic Cache Orchestration for LLM Accelerators through Predictive Management</h3>
+          <p class="authors"><span class="me">Z. Zhou</span>, C. Lai, Y. Gu, W. Zhang &nbsp;·&nbsp; <b>IEEE Transactions on Computers</b></p>
+          <p class="what">
+            The compiler already knows the dataflow; the cache throws it away. DCO feeds tensor- and tile-level
+            metadata into replacement, dead-block prediction and bypassing, so a shared system-level cache behaves
+            like a scratchpad — without the scratchpad's compilation cost.
+          </p>
+          <div class="chips">
+            <span class="chip">up to <b>1.90×</b> over an LRU LLC</span>
+            <span class="chip">anti-thrashing <b>1.51×</b> on Gemma 2K</span>
+            <span class="chip">dead-block prediction <b>+1.19×</b> at 8 MB</span>
+            <span class="chip">analytical model <b>R² = 0.997</b></span>
+            <span class="chip">Llama3-70B / 405B, Qwen3 · 1–16 MB LLC, 16 cores</span>
+            <span class="chip"><b>0.064 mm²</b> @ 2 GHz, 15 nm</span>
+            <a class="chip link" href="https://arxiv.org/abs/2512.07312" target="_blank" rel="noopener">arXiv:2512.07312 ↗</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="pub">
+        <div class="venue"><span class="badge">Preprint</span><span class="yr">IEEE TC · under review</span></div>
+        <div>
+          <h3><span class="short">Sim-FA</span> — A GPGPU Simulator Framework for Fine-Grained Asynchronous Pipeline Analysis</h3>
+          <p class="authors"><span class="me">Z. Zhou</span>, Y. Gu, C. Lai, Y. Wang, W. Zhang</p>
+          <p class="what">
+            Hopper made FlashAttention-3 fast with TMA, WGMMA and warp specialisation — and made every academic
+            simulator wrong. Sim-FA models those asynchronous producer/consumer pipelines cycle by cycle, with a
+            Python companion that explains why roofline models systematically under-count DRAM traffic.
+          </p>
+          <div class="chips">
+            <span class="chip"><b>5.7%</b> MAPE vs. real H800 (<b>12.7%</b> worst case)</span>
+            <span class="chip">first academic sim. of TMA / WGMMA / warp spec.</span>
+            <span class="chip">ablation: <b>64.3%</b> error without the XOR L2 hash</span>
+            <span class="chip">validated against Nsight on Blackwell</span>
+            <a class="chip link" href="https://arxiv.org/abs/2605.00555" target="_blank" rel="noopener">arXiv:2605.00555 ↗</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="pub">
+        <div class="venue"><span class="badge">ICPP '25</span><span class="yr">2025</span></div>
+        <div>
+          <h3><span class="short">LLAMCAT</span> — Optimizing Large Language Model Inference with Cache Arbitration and Throttling</h3>
+          <p class="authors"><span class="me">Z. Zhou</span>*, C. Lai*, W. Zhang &nbsp;·&nbsp; <b>54th Int'l Conference on Parallel Processing</b></p>
+          <p class="what">
+            During LLM decoding the last-level cache stalls not because it is too small, but because it runs out of
+            MSHRs — the slots that track outstanding misses. LLAMCAT pairs MSHR- and load-balance-aware arbitration
+            with two-level multi-gear thread throttling, the first work to target decode-specific miss-handling contention.
+          </p>
+          <div class="chips">
+            <span class="chip"><b>1.10 – 2.11×</b> speedup</span>
+            <span class="chip"><b>1.26×</b> where miss-handling throughput binds — baselines regress</span>
+            <span class="chip"><b>1.58×</b> when capacity is constrained too</span>
+            <span class="chip">hybrid trace-driven + analytical simulation</span>
+            <a class="chip acm" href="https://dl.acm.org/doi/10.1145/3754598.3754671" target="_blank" rel="noopener">ACM DL ↗</a>
+            <a class="chip link" href="https://arxiv.org/abs/2512.00083" target="_blank" rel="noopener">arXiv:2512.00083 ↗</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="pub">
+        <div class="venue"><span class="badge">ICS '24</span><span class="yr">2024</span></div>
+        <div>
+          <h3><span class="short">LCM</span> — LLM-focused Hybrid SPM-cache Architecture with Cache Management for Multi-Core AI Accelerators</h3>
+          <p class="authors">C. Lai*, <span class="me">Z. Zhou</span>*, A. Poptani, W. Zhang &nbsp;·&nbsp; <b>Int'l Conference on Supercomputing, Kyoto</b></p>
+          <p class="what">
+            AI accelerators lean on software-managed scratchpads that are fast but brutal to compile for — a bad
+            trade when the workload changes every quarter. LCM takes the other bet: a shared hardware cache with
+            LLM-aware management, and shows the software simplicity is very nearly free.
+          </p>
+          <div class="chips">
+            <span class="chip"><b>2.57×</b> over a plain LRU cache</span>
+            <span class="chip"><b>+50.5%</b> vs. an SPM under mixed-precision quantisation</span>
+            <span class="chip">prefetcher <b>1.37×</b></span>
+            <span class="chip"><b>−30%</b> memory time</span>
+            <span class="chip"><b>0.218 mm²</b> @ 1 GHz, 15 nm</span>
+            <a class="chip acm" href="https://dl.acm.org/doi/10.1145/3650200.3656592" target="_blank" rel="noopener">ACM DL ↗</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="pub">
+        <div class="venue"><span class="badge">FPGA '22</span><span class="yr">2022</span></div>
+        <div>
+          <h3>High-Performance Sparse Linear Algebra on HBM-Equipped FPGAs Using HLS: A Case Study on SpMV</h3>
+          <p class="authors">Y. Du, Y. Hu, <span class="me">Z. Zhou</span>, Z. Zhang &nbsp;·&nbsp; <b>ACM/SIGDA Int'l Symposium on FPGAs</b></p>
+          <p class="what">
+            Sparse matrix–vector multiply is bound by memory, not arithmetic. HiSparse pairs an HBM-friendly sparse
+            format with a banked-and-replicated on-chip buffer and a split-kernel floorplan that finally closes
+            timing across dies. Work done as a research assistant at Cornell with Prof. Zhiru Zhang.
+          </p>
+          <div class="chips">
+            <span class="chip"><b>4.1×</b> throughput vs. Intel MKL (32 threads)</span>
+            <span class="chip"><b>1.9×</b> bandwidth efficiency vs. cuSPARSE</span>
+            <span class="chip"><b>2.2×</b> vs. ThunderGP</span>
+            <span class="chip"><b>37×</b> more energy-efficient than MKL</span>
+            <span class="chip">split-kernel: <b>117 → 237 MHz</b></span>
+            <a class="chip acm" href="https://dl.acm.org/doi/10.1145/3490422.3502368" target="_blank" rel="noopener">ACM DL ↗</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="pub">
+        <div class="venue"><span class="badge">ASP-DAC '27</span><span class="yr">2027</span></div>
+        <div>
+          <h3><span class="short">DFAC</span> — Dataflow-Aided Intra-cluster Coalescer for AI Accelerators</h3>
+          <p class="authors">C. Lai, Y. Wang, <span class="me">Z. Zhou</span>, W. Zhang, R. Chang, H. Yao &nbsp;·&nbsp; <b>32nd Asia and South Pacific Design Automation Conference</b></p>
+          <p class="what">
+            The same compile-time knowledge, one level further up. DFAC carries reuse counts into hardware merge
+            tables inside the cluster, so redundant requests collapse before they ever reach L2 — which removes
+            round-by-round thrashing and takes the pressure off NoC bisection bandwidth.
+          </p>
+          <div class="chips">
+            <span class="chip">up to <b>2.08×</b> on FlashAttention</span>
+            <span class="chip"><b>1.22×</b> on large GEMM</span>
+            <span class="chip">compile-time reuse counts → merge tables</span>
+            <span class="chip">removes round-by-round L2 thrashing</span>
+          </div>
+        </div>
+      </article>
+
+    </div>
+  </div></section>
+
+  <!-- ============================ TRACK RECORD ============================ -->
+  <section id="track"><div class="wrap">
+    <div class="sec-head"><span class="lbl">Track Record</span><span class="line"></span><span class="cnt">2018 → present</span></div>
+    <h2 class="title">Research, silicon, and one production internship.</h2>
+
+    <div class="tl">
+      <div class="tl-item now">
+        <div class="tl-when">Aug 2022 — present · Hong Kong</div>
+        <h3>Ph.D. Candidate, Electronic &amp; Computer Engineering</h3>
+        <p class="tl-where">HKUST · <em>Advisor: Prof. Wei Zhang, Fellow, IEEE</em> · CGA 4.06 / 4.3</p>
+        <ul>
+          <li>Designed the <strong>Tensor Management Unit</strong> — the liaison between software dataflow and hardware replacement/bypass logic, holding metadata at tensor and tile granularity. Chisel HDL, synthesised at 15 nm: 0.064 mm² at 2 GHz.</li>
+          <li>Built <strong>LCM</strong> (ICS '24) and its extension <strong>DCO</strong> (IEEE TC): dead-block prediction, self-adaptive anti-thrashing and coordinated bypassing under one shared priority score — up to 1.90× over LRU across cache sizes and FlashAttention/GQA workloads.</li>
+          <li>Proposed <strong>DFAC</strong> (ASP-DAC '27): a dataflow-aided intra-cluster coalescer that conveys compile-time reuse counts to hardware merge tables, eliminating round-by-round L2 thrashing and easing NoC bisection pressure — up to 2.08× on FlashAttention and 1.22× on large GEMM.</li>
+          <li>Validated a cycle-accurate analytical model of compute/memory overlap (R² = 0.997), so policy gains extrapolate reliably to Llama3-405B-scale workloads without full simulation.</li>
+        </ul>
+      </div>
+
+      <div class="tl-item">
+        <div class="tl-when">Jul — Oct 2025 · Shanghai</div>
+        <h3>Intern Chip Engineer — Data Center &amp; Compute Software</h3>
+        <p class="tl-where">Alibaba T-Head Silicon (平头哥)</p>
+        <ul>
+          <li>Analysed production FlashAttention-3 kernels: warp specialisation, ping-pong scheduling, asynchronous execution pipelines.</li>
+          <li>Micro-benchmarked WGMMA and TMA on real hardware to characterise behaviour the ISA documentation does not specify — the measurements Sim-FA's timing model is calibrated against.</li>
+        </ul>
+      </div>
+
+      <div class="tl-item">
+        <div class="tl-when">2026 · George Mason University</div>
+        <h3>TileBench — controlled benchmark for tile-based GPU DSLs</h3>
+        <p class="tl-where">GMU · <em>Advisor: Prof. Keren Zhou</em></p>
+        <ul>
+          <li>45 operators across point-wise, reduction/normalisation, matmul/attention, stencil/convolution and layout classes, with verified Triton and cuTile implementations and multi-dtype sweeps.</li>
+          <li>Found the performance gap is workload-dependent: cuTile wins on Tensor-Core/TMA-friendly tiles, Triton is more robust on irregular and bandwidth-bound kernels; autotuning buys 1.15–1.20× roofline utilisation and no more.</li>
+          <li>Measured how well frontier LLMs write kernels for each backend — the <em>backend</em> gap exceeds the <em>model</em> gap.</li>
+        </ul>
+      </div>
+
+      <div class="tl-item">
+        <div class="tl-when">Jan — Jun 2022 · Beijing</div>
+        <h3>Research Assistant — Ventus GPGPU</h3>
+        <p class="tl-where">Tsinghua University · <em>Advisor: Prof. Hu He</em></p>
+        <ul>
+          <li>Designed the CTA (thread-block) scheduler in Chisel HDL; merged into the mainline of the open-source <a href="https://github.com/THU-DSP-LAB/ventus-gpgpu" target="_blank" rel="noopener">Ventus GPGPU ↗</a>.</li>
+        </ul>
+      </div>
+
+      <div class="tl-item">
+        <div class="tl-when">Jun — Sep 2021 · Cornell University</div>
+        <h3>Research Assistant — GraphLily FPGA overlay</h3>
+        <p class="tl-where">Cornell · <em>Advisor: Prof. Zhiru Zhang</em></p>
+        <ul>
+          <li>Implemented connected components on the HLS-based GraphLily overlay, extended its hardware operator set, and benchmarked against the Xilinx Vitis sparse library.</li>
+        </ul>
+      </div>
+    </div>
+  </div></section>
+
+  <!-- ============================ TOOLCHAIN ============================ -->
+  <section id="kit"><div class="wrap">
+    <div class="sec-head"><span class="lbl">Toolchain</span><span class="line"></span><span class="cnt">RTL → kernel → simulator</span></div>
+    <div class="split">
+      <div>
+        <h2 class="title">What I reach for.</h2>
+        <div class="kit" style="margin-top:26px">
+          <div class="kit-row">
+            <div class="k">Hardware / RTL</div>
+            <div class="v"><span class="key">Chisel</span><span>Verilog HDL</span><span>Design Compiler</span><span>Vitis HLS</span><span>15 nm synthesis</span></div>
+          </div>
+          <div class="kit-row">
+            <div class="k">GPU &amp; kernels</div>
+            <div class="v"><span class="key">CUDA</span><span class="key">Triton</span><span>Gluon</span><span>cuTile</span><span>Nsight Compute</span><span>PTX / SASS</span><span>Proton</span></div>
+          </div>
+          <div class="kit-row">
+            <div class="k">Simulation</div>
+            <div class="v"><span class="key">Cycle-accurate GPGPU sim</span><span>Trace-driven modelling</span><span>Analytical / roofline</span><span>C / C++</span><span>Python</span></div>
+          </div>
+          <div class="kit-row" style="border-bottom:0">
+            <div class="k">Silicon seen</div>
+            <div class="v"><span>NVIDIA H800 (Hopper)</span><span>B200 (Blackwell)</span><span>HBM-equipped FPGAs</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="edu">
+        <div class="edu-item">
+          <h3>The Hong Kong University of Science and Technology</h3>
+          <p class="deg">Ph.D., Electronic &amp; Computer Engineering</p>
+          <div class="meta">2022 — present · CGA <b>4.06 / 4.3</b></div>
+          <div class="course">Adv. Computer Architecture (A) · Adv. AI (A+) · Adv. Deep Learning Architectures (A) · Adv. Algorithms (A)</div>
+        </div>
+        <div class="edu-item">
+          <h3>Tsinghua University</h3>
+          <p class="deg">B.E., Microelectronic Engineering</p>
+          <div class="meta">2018 — 2022 · GPA <b>3.77 / 4.0</b> · IELTS 7.5</div>
+          <div class="course">Computer Architecture (A+) · VLSI CAD (A) · Modern OS (A) · Digital IC &amp; Systems</div>
+        </div>
+        <div class="sec-head" style="margin:22px 0 0"><span class="lbl">Honors</span><span class="line"></span></div>
+        <ul class="honors">
+          <li>RedBird Ph.D. Recruitment Award, HKUST<span class="yr">2022</span></li>
+          <li>Academic Scholarship, Dept. of Electronic Engineering, Tsinghua<span class="yr">2019</span></li>
+        </ul>
+      </div>
+    </div>
+  </div></section>
+
+  <!-- ============================ CONTACT ============================ -->
+  <div class="contact" id="contact">
+    <div class="contact-in">
+      <div class="sec-head"><span class="lbl">Contact</span><span class="line"></span><span class="cnt">Hong Kong SAR · UTC+8</span></div>
+      <h2>Let's talk about what's<br>slowing your <span class="cu">kernels</span> down.</h2>
+      <p>
+        Looking for full-time roles in computer architecture, GPU and AI infrastructure, and performance
+        engineering — in Hong Kong, mainland China, or overseas. Happy to walk through any of the work above.
+      </p>
+      <div class="links">
+        <a class="primary" href="mailto:zhouzc2000@foxmail.com"><span class="ic mono">Email</span>zhouzc2000@foxmail.com</a>
+        <a href="tel:+85266792587"><span class="ic mono">Tel</span>+852 6679 2587</a>
+        <a href="https://scholar.google.com/citations?user=WuX9ZJkAAAAJ" target="_blank" rel="noopener"><span class="ic mono">Scholar</span>110+ citations ↗</a>
+        <a href="https://orcid.org/0009-0000-7037-7418" target="_blank" rel="noopener"><span class="ic mono">ORCID</span>0009-0000-7037-7418 ↗</a>
+        <a href="assets/Zhongchun_Zhou_CV.pdf" download><span class="ic mono">CV</span>Download PDF ↓</a>
+      </div>
+    </div>
+    <footer>
+      <span>Zhongchun Zhou · Computer Architecture &amp; AI Infrastructure</span>
+      <span>Hong Kong SAR, China</span>
+    </footer>
+  </div>
+</div>
+
+<script>
+/* ==========================================================================
+   Hero background — a live cache-access heatmap.
+   Cells are cache lines; copper flashes are accesses being serviced, the
+   left-to-right sweeps are TMA bulk tile copies landing.
+   ========================================================================== */
+(function () {
+  var cv = document.getElementById('trace');
+  if (!cv) return;
+  var ctx = cv.getContext('2d');
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var CELL = 15, GAP = 4, cols = 0, rows = 0, heat = null, dpr = 1;
+
+  function resize() {
+    var r = cv.parentElement.getBoundingClientRect();
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    cv.width = Math.max(1, Math.floor(r.width * dpr));
+    cv.height = Math.max(1, Math.floor(r.height * dpr));
+    cols = Math.ceil(r.width / (CELL + GAP)) + 1;
+    rows = Math.ceil(r.height / (CELL + GAP)) + 1;
+    heat = new Float32Array(cols * rows);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    draw();
+  }
+  function touch(i, v) { if (i >= 0 && i < heat.length && heat[i] < v) heat[i] = v; }
+
+  var sweeps = [];
+  function step() {
+    for (var b = 0; b < 3; b++) {
+      var cx = (Math.random() * cols) | 0, cy = (Math.random() * rows) | 0;
+      for (var k = 0; k < 4; k++) {
+        var x = cx + ((Math.random() * 3) | 0) - 1, y = cy + ((Math.random() * 3) | 0) - 1;
+        if (x >= 0 && x < cols && y >= 0 && y < rows) touch(y * cols + x, 0.55 + Math.random() * 0.45);
+      }
+    }
+    if (Math.random() < 0.045) sweeps.push({ row: (Math.random() * rows) | 0, x: -3, speed: 0.55 + Math.random() * 0.9 });
+    for (var s = sweeps.length - 1; s >= 0; s--) {
+      var sw = sweeps[s]; sw.x += sw.speed;
+      var px = sw.x | 0;
+      for (var t = 0; t < 3; t++) {
+        var xx = px - t;
+        if (xx >= 0 && xx < cols) touch(sw.row * cols + xx, 1 - t * 0.22);
+      }
+      if (sw.x > cols + 4) sweeps.splice(s, 1);
+    }
+    for (var i = 0; i < heat.length; i++) if (heat[i] > 0) heat[i] *= 0.945;
+  }
+  function draw() {
+    var w = cv.width / dpr, h = cv.height / dpr;
+    ctx.clearRect(0, 0, w, h);
+    for (var y = 0; y < rows; y++) {
+      for (var x = 0; x < cols; x++) {
+        var v = heat[y * cols + x], px = x * (CELL + GAP), py = y * (CELL + GAP);
+        if (v > 0.03) {
+          ctx.fillStyle = 'rgba(255,143,69,' + (v * 0.5).toFixed(3) + ')';
+          ctx.fillRect(px, py, CELL, CELL);
+          if (v > 0.7) {
+            ctx.fillStyle = 'rgba(255,208,164,' + ((v - 0.7) * 0.9).toFixed(3) + ')';
+            ctx.fillRect(px + 4, py + 4, CELL - 8, CELL - 8);
+          }
+        } else {
+          ctx.fillStyle = 'rgba(124,150,196,0.055)';
+          ctx.fillRect(px, py, CELL, CELL);
+        }
+      }
+    }
+  }
+  var last = 0;
+  function loop(ts) { if (ts - last > 62) { step(); draw(); last = ts; } requestAnimationFrame(loop); }
+
+  resize();
+  window.addEventListener('resize', function () { clearTimeout(cv._t); cv._t = setTimeout(resize, 140); });
+  if (reduce) { for (var i = 0; i < 40; i++) step(); draw(); }
+  else { for (var j = 0; j < 14; j++) step(); requestAnimationFrame(loop); }
+})();
+
+/* ---- scroll progress ---- */
+(function () {
+  var bar = document.getElementById('prog');
+  function up() {
+    var h = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (h > 0 ? (window.scrollY / h) * 100 : 0) + '%';
+  }
+  window.addEventListener('scroll', up, { passive: true });
+  window.addEventListener('resize', up);
+  up();
+})();
+
+/* ---- rail scroll-spy ---- */
+(function () {
+  var links = Array.prototype.slice.call(document.querySelectorAll('.rail-nav a'));
+  var targets = links.map(function (a) { return document.querySelector(a.getAttribute('href')); });
+  if (!('IntersectionObserver' in window)) return;
+  var seen = new Map();
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) { seen.set(e.target, e.isIntersecting ? e.intersectionRatio : 0); });
+    var best = null, bestV = 0;
+    seen.forEach(function (v, el) { if (v > bestV) { bestV = v; best = el; } });
+    links.forEach(function (a, i) { a.classList.toggle('on', targets[i] === best && bestV > 0); });
+  }, { rootMargin: '-15% 0px -55% 0px', threshold: [0, 0.15, 0.4, 0.8] });
+  targets.forEach(function (t) { if (t) io.observe(t); });
+})();
+</script>
+</body>
+</html>
